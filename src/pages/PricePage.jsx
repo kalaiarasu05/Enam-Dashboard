@@ -22,6 +22,7 @@ export default function PricePage() {
       alert("Please select date range");
       return;
     }
+
     try {
       setLoading(true);
       const res = await fetchTradeData({ apmcName: selectedApmc, fromDate, toDate });
@@ -44,7 +45,6 @@ export default function PricePage() {
     if (!sortConfig.key) return 0;
     let valueA = a[sortConfig.key];
     let valueB = b[sortConfig.key];
-
     if (["min_price", "modal_price", "max_price", "commodity_arrivals", "commodity_traded"].includes(sortConfig.key)) {
       valueA = Number(valueA);
       valueB = Number(valueB);
@@ -62,17 +62,16 @@ export default function PricePage() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedData = sortedData.slice(startIndex, endIndex);
-
-  const today = new Date().toISOString().split("T")[0]; // for restricting future date
+  const today = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="p-4 sm:p-6">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-800">Price Details</h2>
+    <div className="p-2 sm:p-4">
+      <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">Price Details</h2>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4">
         <select
-          className="border p-3 rounded shadow-sm w-full text-base"
+          className="border p-2 rounded shadow-sm w-full"
           onChange={e => setSelectedApmc(e.target.value)}
         >
           <option value="">All Mandis</option>
@@ -83,31 +82,33 @@ export default function PricePage() {
 
         <input
           type="date"
-          className="border p-3 rounded shadow-sm w-full text-base"
+          className="border p-2 rounded shadow-sm w-full"
           placeholder="Start Date"
           max={today}
+          value={fromDate}
           onChange={e => setFromDate(e.target.value)}
         />
 
         <input
           type="date"
-          className="border p-3 rounded shadow-sm w-full text-base"
+          className="border p-2 rounded shadow-sm w-full"
           placeholder="End Date"
           max={today}
+          value={toDate}
           onChange={e => setToDate(e.target.value)}
         />
 
         <button
           onClick={handleApply}
           disabled={loading}
-          className="bg-green-600 hover:bg-green-700 text-white rounded p-3 font-medium disabled:opacity-50 w-full text-base"
+          className="bg-green-600 hover:bg-green-700 text-white rounded p-2 font-medium disabled:opacity-50 w-full"
         >
           {loading ? "Loading..." : "Apply"}
         </button>
       </div>
 
       {/* Loading */}
-      {loading && <div className="text-center py-4 font-semibold text-blue-600">Fetching trade data...</div>}
+      {loading && <div className="text-center py-2 font-semibold text-blue-600">Fetching trade data...</div>}
 
       {/* Empty */}
       {!loading && data.length === 0 && (
@@ -119,50 +120,90 @@ export default function PricePage() {
       {/* Table */}
       {!loading && data.length > 0 && (
         <div className="bg-white shadow rounded-lg overflow-x-auto">
-          <table className="min-w-full text-base sm:text-sm whitespace-nowrap">
+
+          <table className="min-w-[600px] sm:min-w-full text-sm whitespace-nowrap">
             <thead className="bg-blue-600 text-white sticky top-0">
               <tr>
-                <th className="p-3 text-left sticky left-0 bg-blue-600 z-20">APMC</th>
-                <th className="p-3 text-left sticky left-[8rem] bg-blue-600 z-20 cursor-pointer" onClick={() => handleSort("created_at")}>
-                  Date {sortConfig.key === "created_at" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                <th className="p-2 text-left sticky left-0 bg-blue-600 z-30">APMC</th>
+                <th className="p-2 text-left sticky left-24 bg-blue-600 z-30 cursor-pointer"
+                    onClick={() => handleSort("created_at")}>
+                  Date {sortConfig.key === "created_at" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
                 </th>
-                <th className="p-3 text-right cursor-pointer" onClick={() => handleSort("min_price")}>Min {sortConfig.key === "min_price" && (sortConfig.direction === "asc" ? "↑" : "↓")}</th>
-                <th className="p-3 text-right cursor-pointer" onClick={() => handleSort("modal_price")}>Modal {sortConfig.key === "modal_price" && (sortConfig.direction === "asc" ? "↑" : "↓")}</th>
-                <th className="p-3 text-right cursor-pointer" onClick={() => handleSort("max_price")}>Max {sortConfig.key === "max_price" && (sortConfig.direction === "asc" ? "↑" : "↓")}</th>
-                <th className="p-3 text-right cursor-pointer" onClick={() => handleSort("commodity_arrivals")}>Arrivals {sortConfig.key === "commodity_arrivals" && (sortConfig.direction === "asc" ? "↑" : "↓")}</th>
-                <th className="p-3 text-right cursor-pointer" onClick={() => handleSort("commodity_traded")}>Traded {sortConfig.key === "commodity_traded" && (sortConfig.direction === "asc" ? "↑" : "↓")}</th>
+                <th className="p-2 text-right sticky left-[12rem] bg-blue-600 z-20 cursor-pointer"
+                    onClick={() => handleSort("max_price")}>
+                  Max {sortConfig.key === "max_price" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                </th>
+                <th className="p-2 text-right sticky left-[18rem] bg-blue-600 z-20 cursor-pointer"
+                    onClick={() => handleSort("modal_price")}>
+                  Modal {sortConfig.key === "modal_price" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                </th>
+                <th className="p-2 text-right cursor-pointer" onClick={() => handleSort("min_price")}>
+                  Min {sortConfig.key === "min_price" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                </th>
+                <th className="p-2 text-right cursor-pointer" onClick={() => handleSort("commodity_arrivals")}>
+                  Arrivals {sortConfig.key === "commodity_arrivals" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                </th>
+                <th className="p-2 text-right cursor-pointer" onClick={() => handleSort("commodity_traded")}>
+                  Traded {sortConfig.key === "commodity_traded" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                </th>
               </tr>
             </thead>
 
             <tbody className="divide-y">
               {paginatedData.map((item, index) => (
                 <tr key={index} className="hover:bg-gray-50">
-                  <td className="p-3 sticky left-0 bg-white z-10">{item.apmc}</td>
-                  <td className="p-3 sticky left-[8rem] bg-white z-10">{item.created_at}</td>
-                  <td className="p-3 text-right">{item.min_price}</td>
-                  <td className="p-3 text-right font-medium">{item.modal_price}</td>
-                  <td className="p-3 text-right">{item.max_price}</td>
-                  <td className="p-3 text-right">{item.commodity_arrivals}</td>
-                  <td className="p-3 text-right">{item.commodity_traded}</td>
+                  <td className="p-2 sticky left-0 bg-white z-10">{item.apmc}</td>
+                  <td className="p-2 sticky left-24 bg-white z-10">{item.created_at}</td>
+                  <td className="p-2 sticky left-[12rem] bg-white z-10">{item.max_price}</td>
+                  <td className="p-2 sticky left-[18rem] bg-white z-10">{item.modal_price}</td>
+                  <td className="p-2 text-right">{item.min_price}</td>
+                  <td className="p-2 text-right">{item.commodity_arrivals}</td>
+                  <td className="p-2 text-right">{item.commodity_traded}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      )}
 
-      {/* Pagination */}
-      {!loading && data.length > 0 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-t bg-gray-50 gap-4 text-sm">
-          <div className="text-gray-600 text-center sm:text-left">
-            Showing {startIndex + 1}–{Math.min(endIndex, sortedData.length)} of {sortedData.length} records
+          {/* Pagination Footer */}
+          <div className="flex flex-col sm:flex-row justify-between items-center p-3 border-t bg-gray-50 gap-2 text-sm">
+            <div className="text-gray-600">
+              Showing {startIndex + 1}–{Math.min(endIndex, sortedData.length)} of {sortedData.length} records
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span>Rows:</span>
+              <select
+                value={rowsPerPage}
+                onChange={e => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                className="border rounded px-2 py-1"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Prev
+              </button>
+
+              <span>{currentPage} / {totalPages}</span>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50">Prev</button>
-            <span>{currentPage} / {totalPages}</span>
-            <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50">Next</button>
-          </div>
         </div>
       )}
     </div>
