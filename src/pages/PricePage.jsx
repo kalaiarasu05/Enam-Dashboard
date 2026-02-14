@@ -9,11 +9,7 @@ export default function PricePage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [sortConfig, setSortConfig] = useState({
-    key: null,
-    direction: "asc",
-  });
-
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -21,19 +17,16 @@ export default function PricePage() {
     fetchAPMCs().then(res => setApmcs(res.data || []));
   }, []);
 
+  const today = new Date().toISOString().split("T")[0];
+
   async function handleApply() {
     if (!fromDate || !toDate) {
       alert("Please select date range");
       return;
     }
-
     try {
       setLoading(true);
-      const res = await fetchTradeData({
-        apmcName: selectedApmc,
-        fromDate,
-        toDate
-      });
+      const res = await fetchTradeData({ apmcName: selectedApmc, fromDate, toDate });
       setData(res.data || []);
       setCurrentPage(1);
     } catch (err) {
@@ -49,9 +42,10 @@ export default function PricePage() {
     setSortConfig({ key, direction });
   }
 
-  // Sort data
+  // Sorted data
   const sortedData = [...data].sort((a, b) => {
     if (!sortConfig.key) return 0;
+
     let valueA = a[sortConfig.key];
     let valueB = b[sortConfig.key];
 
@@ -75,8 +69,6 @@ export default function PricePage() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedData = sortedData.slice(startIndex, endIndex);
-
-  const today = new Date().toISOString().split("T")[0]; // for max attribute in date input
 
   return (
     <div className="p-2 sm:p-6">
@@ -146,18 +138,47 @@ export default function PricePage() {
       {/* Table */}
       {!loading && data.length > 0 && (
         <div className="bg-white shadow rounded-lg">
-          {/* Scrollable table */}
           <div className="overflow-x-auto">
             <table className="min-w-[600px] sm:min-w-full text-sm whitespace-nowrap">
               <thead className="bg-blue-600 text-white sticky top-0 z-20">
                 <tr>
                   <th className="p-2 sticky left-0 bg-blue-600 z-30">APMC</th>
-                  <th className="p-2 sticky left-32 bg-blue-600 z-30">Date</th>
-                  <th onClick={() => handleSort("max_price")} className="p-2 text-right cursor-pointer">Max {sortConfig.key === "max_price" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}</th>
-                  <th onClick={() => handleSort("modal_price")} className="p-2 text-right cursor-pointer">Modal {sortConfig.key === "modal_price" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}</th>
-                  <th onClick={() => handleSort("min_price")} className="p-2 text-right cursor-pointer">Min {sortConfig.key === "min_price" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}</th>
-                  <th onClick={() => handleSort("commodity_arrivals")} className="p-2 text-right cursor-pointer">Arrivals {sortConfig.key === "commodity_arrivals" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}</th>
-                  <th onClick={() => handleSort("commodity_traded")} className="p-2 text-right cursor-pointer">Traded {sortConfig.key === "commodity_traded" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}</th>
+                  <th
+                    onClick={() => handleSort("created_at")}
+                    className="p-2 sticky left-32 bg-blue-600 z-30 cursor-pointer"
+                  >
+                    Date {sortConfig.key === "created_at" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                  </th>
+                  <th
+                    onClick={() => handleSort("max_price")}
+                    className="p-2 text-right cursor-pointer"
+                  >
+                    Max {sortConfig.key === "max_price" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                  </th>
+                  <th
+                    onClick={() => handleSort("modal_price")}
+                    className="p-2 text-right cursor-pointer"
+                  >
+                    Modal {sortConfig.key === "modal_price" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                  </th>
+                  <th
+                    onClick={() => handleSort("min_price")}
+                    className="p-2 text-right cursor-pointer"
+                  >
+                    Min {sortConfig.key === "min_price" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                  </th>
+                  <th
+                    onClick={() => handleSort("commodity_arrivals")}
+                    className="p-2 text-right cursor-pointer"
+                  >
+                    Arrivals {sortConfig.key === "commodity_arrivals" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                  </th>
+                  <th
+                    onClick={() => handleSort("commodity_traded")}
+                    className="p-2 text-right cursor-pointer"
+                  >
+                    Traded {sortConfig.key === "commodity_traded" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                  </th>
                 </tr>
               </thead>
 
