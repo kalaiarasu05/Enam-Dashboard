@@ -1,103 +1,96 @@
-import { useEffect, useState } from "react";
-import { fetchAPMCs, fetchTradeData } from "../services/enamApi";
+import express from "express";
+import cors from "cors";
+import axios from "axios";
 
-export default function PricePage() {
-  const [apmcs, setApmcs] = useState([]);
-  const [selectedApmc, setSelectedApmc] = useState("");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  const [data, setData] = useState([]);
+const app = express();
+const PORT = 5000;
 
-  useEffect(() => {
-    fetchAPMCs().then(res => {
-      setApmcs(res.data || []);
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
+// Base URL for eNAM API
+const BASE_URL = "https://enam.gov.in/web/Ajax_ctrl";
+
+/*
+-----------------------------------------
+Health Check Route
+-----------------------------------------
+*/
+app.get("/", (req, res) => {
+  res.json({ message: "eNAM Proxy Server Running" });
+});
+
+/*
+-----------------------------------------
+APMC LIST ROUTE
+-----------------------------------------
+*/
+app.post("/api/apmcs", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/apmc_list`,
+      new URLSearchParams({
+        state_id: 509, // Tamil Nadu
+      }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("APMC Fetch Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch APMC list",
     });
-  }, []);
-
-  async function handleApply() {
-    if (!fromDate || !toDate) {
-      alert("Please select date range");
-      return;
-    }
-
-    const res = await fetchTradeData({
-      apmcName: selectedApmc,
-      fromDate,
-      toDate
-    });
-
-    setData(res.data || []);
   }
+});
 
-  return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">
-        Price Details
-      </h2>
+/*
+-----------------------------------------
+TRADE DATA ROUTE
+-----------------------------------------
+*/
+app.post("/api/trade-data", async (req, res) => {
+  try {
+    const { apmcName, fromDate, toDate } = req.body;
 
-      {/* Filters */}
-      <div className="grid grid-cols-4 gap-4 mb-4">
-        <select
-          className="border p-2 rounded"
-          onChange={e => setSelectedApmc(e.target.value)}
-        >
-          <option value="">All Mandis</option>
-          {apmcs.map(apmc => (
-            <option key={apmc.apmc_id} value={apmc.apmc_name}>
-              {apmc.apmc_name}
-            </option>
-          ))}
-        </select>
+    const response = await axios.post(
+      `${BASE_URL}/trade_data_list`,
+      new URLSearchParams({
+        language: "en",
+        stateName: "TAMIL NADU",
+        apmcName: apmcName || "-- Select APMCs --",
+        commodityName: "COPRA",
+        fromDate,
+        toDate,
+      }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
 
-        <input
-          type="date"
-          className="border p-2 rounded"
-          onChange={e => setFromDate(e.target.value)}
-        />
+    res.json(response.data);
+  } catch (error) {
+    console.error("Trade Data Fetch Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch trade data",
+    });
+  }
+});
 
-        <input
-          type="date"
-          className="border p-2 rounded"
-          onChange={e => setToDate(e.target.value)}
-        />
-
-        <button
-          onClick={handleApply}
-          className="bg-green-600 text-white rounded p-2"
-        >
-          Apply
-        </button>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-auto bg-white shadow rounded">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="p-2">Date</th>
-              <th className="p-2">APMC</th>
-              <th className="p-2">Min</th>
-              <th className="p-2">Modal</th>
-              <th className="p-2">Max</th>
-              <th className="p-2">Arrivals</th>
-              <th className="p-2">Traded</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map(item => (
-              <tr key={item.id} className="border-b">
-                <td className="p-2">{item.created_at}</td>
-                <td className="p-2">{item.apmc}</td>
-                <td className="p-2">{item.min_price}</td>
-                <td className="p-2">{item.modal_price}</td>
-                <td className="p-2">{item.max_price}</td>
-                <td className="p-2">{item.commodity_arrivals}</td>
-                <td className="p-2">{item.commodity_traded}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+/*
+-----------------------------------------
+START SERVER
+-----------------------------------------
+*/
+app.listen(PORT, () => {
+  console.log(`✅ Server running on http://localhost:${PORT}`);
+});

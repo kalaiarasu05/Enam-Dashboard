@@ -1,6 +1,8 @@
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 // APMC list
 export async function fetchAPMCs() {
-  const res = await fetch("http://localhost:5000/api/apmcs", {
+  const res = await fetch(`${API_BASE_URL}/api/apmcs`, {
     method: "POST"
   });
 
@@ -9,7 +11,7 @@ export async function fetchAPMCs() {
 
 // Trade data
 export async function fetchTradeData(payload) {
-  const res = await fetch("http://localhost:5000/api/trade-data", {
+  const res = await fetch(`${API_BASE_URL}/api/trade-data`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
