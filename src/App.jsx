@@ -1,55 +1,49 @@
-// import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-// import './App.css'
-
-// function App() {
-//   const [count, setCount] = useState(0)
-
-//   return (
-//     <>
-//       <div>
-//         <a href="https://vite.dev" target="_blank">
-//           <img src={viteLogo} className="logo" alt="Vite logo" />
-//         </a>
-//         <a href="https://react.dev" target="_blank">
-//           <img src={reactLogo} className="logo react" alt="React logo" />
-//         </a>
-//       </div>
-//       <h1>Vite + React</h1>
-//       <div className="card">
-//         <button onClick={() => setCount((count) => count + 1)}>
-//           count is {count}
-//         </button>
-//         <p>
-//           Edit <code>src/App.jsx</code> and save to test HMR
-//         </p>
-//       </div>
-//       <p className="read-the-docs">
-//         Click on the Vite and React logos to learn more
-//       </p>
-//     </>
-//   )
-// }
-
-// export default App
-
-import { useState } from "react";
+import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 import PricePage from "./pages/PricePage";
+import ComparisonPage from "./pages/ComparisonPage";
 
 export default function App() {
   return (
     <div className="min-h-screen bg-gray-100">
+
+      {/* Header */}
       <header className="bg-green-600 text-white p-4 text-xl font-semibold">
         eNAM Trade Dashboard
       </header>
 
+      {/* Navigation Tabs */}
+      <div className="bg-white shadow flex justify-center gap-6 py-3">
+        <NavLink
+          to="/price"
+          className={({ isActive }) =>
+            isActive
+              ? "text-green-600 font-semibold border-b-2 border-green-600"
+              : "text-gray-600"
+          }
+        >
+          Price Details
+        </NavLink>
+
+        <NavLink
+          to="/comparison"
+          className={({ isActive }) =>
+            isActive
+              ? "text-green-600 font-semibold border-b-2 border-green-600"
+              : "text-gray-600"
+          }
+        >
+          Comparison
+        </NavLink>
+      </div>
+
+      {/* Page Content */}
       <div className="p-6">
-        <PricePage />
+        <Routes>
+          <Route path="/" element={<Navigate to="/price" />} />
+          <Route path="/price" element={<PricePage />} />
+          <Route path="/comparison" element={<ComparisonPage />} />
+        </Routes>
       </div>
     </div>
   );
 }
-
-
-

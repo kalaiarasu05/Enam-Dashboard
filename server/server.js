@@ -5,59 +5,111 @@ import axios from "axios";
 const app = express();
 const PORT = 5000;
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Base URL for eNAM API
 const BASE_URL = "https://enam.gov.in/web/Ajax_ctrl";
 
 /*
------------------------------------------
-Health Check Route
------------------------------------------
+--------------------------------------------------
+ALLOWED MANDIS (Tamil Nadu Only)
+--------------------------------------------------
+*/
+const ALLOWED_MANDIS = [
+  "ELUMATHUR", "VELLAKOIL", "ANAIMALAI", "KODUMUDI", "UDUMALPET",
+  "PARAMATHI VELUR", "PONGALUR", "SINGAMPUNERI", "OMALUR", "ANNUR",
+  "MECHERI", "SATHYAMANGALAM", "T VADIPATTI", "AVALPOONDURAI",
+  "GOPAL PATTI", "NEGAMAM", "POCHAMPALLI", "SALEM", "VAZHAPPADI",
+  "GOBICHETTIPALAYAM", "THENI", "NAMAGIRIPETTAI", "MADATHUKULAM",
+  "KONGANAPURAM", "ANTHIYUR", "MUTHUR", "KANGEYAM", "UTHANGARAI",
+  "BOOTHAPADI", "THALAVADI", "MELUR", "PALANI", "ARANTHANGI",
+  "EDAPPADI", "CHEYYAR", "RAJAPALAYAM", "VANDAVASI", "ATTHUR",
+  "CUMBUM", "KAVINDAPADI", "KINATHUKADAVU", "RAMANATHAPURAM",
+  "THIRUPATHUR", "VANIYAMBADI"
+];
+
+/*
+--------------------------------------------------
+COMMON HEADERS (Important for eNAM)
+--------------------------------------------------
+*/
+const ENAM_HEADERS = {
+  "Content-Type": "application/x-www-form-urlencoded",
+  "User-Agent": "Mozilla/5.0",
+  "Origin": "https://enam.gov.in",
+  "Referer": "https://enam.gov.in/web/"
+};
+
+/*
+--------------------------------------------------
+HEALTH CHECK
+--------------------------------------------------
 */
 app.get("/", (req, res) => {
   res.json({ message: "eNAM Proxy Server Running" });
 });
 
 /*
------------------------------------------
-APMC LIST ROUTE
------------------------------------------
+--------------------------------------------------
+APMC LIST ROUTE (Filtered + Sorted)
+--------------------------------------------------
 */
 app.post("/api/apmcs", async (req, res) => {
   try {
     const response = await axios.post(
       `${BASE_URL}/apmc_list`,
-      new URLSearchParams({
-        state_id: 509, // Tamil Nadu
-      }),
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
+      new URLSearchParams({ state_id: 509 }),
+      { headers: ENAM_HEADERS }
     );
 
-    res.json(response.data);
+    // ✅ IMPORTANT FIX HERE
+    const allApmcs = response.data?.data || [];
+
+    if (!Array.isArray(allApmcs)) {
+      console.error("Unexpected APMC response:", response.data);
+      return res.status(500).json({
+        success: false,
+        message: "Invalid APMC data format from eNAM"
+      });
+    }
+
+    // Filter only allowed mandis
+    const filteredApmcs = allApmcs.filter(apmc =>
+      ALLOWED_MANDIS.includes(apmc.apmc_name?.toUpperCase())
+    );
+
+    // Sort alphabetically
+    const sortedApmcs = filteredApmcs.sort((a, b) =>
+      a.apmc_name.localeCompare(b.apmc_name)
+    );
+
+    res.json(sortedApmcs);
+
   } catch (error) {
-    console.error("APMC Fetch Error:", error.message);
+    console.error("APMC Fetch Error:", error.response?.data || error.message);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch APMC list",
+      message: "Failed to fetch APMC list"
     });
   }
 });
 
 /*
------------------------------------------
-TRADE DATA ROUTE
------------------------------------------
+--------------------------------------------------
+TRADE DATA ROUTE (Restricted Mandis)
+--------------------------------------------------
 */
 app.post("/api/trade-data", async (req, res) => {
   try {
     const { apmcName, fromDate, toDate } = req.body;
+
+    // Validate mandi if selected
+    if (apmcName && !ALLOWED_MANDIS.includes(apmcName.toUpperCase())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Mandi Selected"
+      });
+    }
 
     const response = await axios.post(
       `${BASE_URL}/trade_data_list`,
@@ -67,29 +119,26 @@ app.post("/api/trade-data", async (req, res) => {
         apmcName: apmcName || "-- Select APMCs --",
         commodityName: "COPRA",
         fromDate,
-        toDate,
+        toDate
       }),
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
+      { headers: ENAM_HEADERS }
     );
 
     res.json(response.data);
+
   } catch (error) {
-    console.error("Trade Data Fetch Error:", error.message);
+    console.error("Trade Data Fetch Error:", error.response?.data || error.message);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch trade data",
+      message: "Failed to fetch trade data"
     });
   }
 });
 
 /*
------------------------------------------
+--------------------------------------------------
 START SERVER
------------------------------------------
+--------------------------------------------------
 */
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
