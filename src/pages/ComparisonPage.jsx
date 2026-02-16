@@ -9,10 +9,17 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Brush,
 } from "recharts";
 
 function formatDate(date) {
   return date.toISOString().split("T")[0];
+}
+
+// Format Month + Year for X-axis (Jan 25, Feb 26)
+function formatMonthYear(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleString("default", { month: "short", year: "2-digit" });
 }
 
 const COLORS = ["#16a34a", "#2563eb", "#dc2626", "#f59e0b"];
@@ -65,9 +72,6 @@ export default function ComparisonPage() {
     setSelectedMandis(updated);
   }
 
-  /* ----------------------------------
-     Add Dropdown (Max 4)
-  ----------------------------------- */
   function addMandiDropdown() {
     if (selectedMandis.length >= 4) {
       alert("Maximum 4 mandis allowed");
@@ -76,17 +80,11 @@ export default function ComparisonPage() {
     setSelectedMandis([...selectedMandis, null]);
   }
 
-  /* ----------------------------------
-     Remove Dropdown
-  ----------------------------------- */
   function removeMandi(index) {
     const updated = selectedMandis.filter((_, i) => i !== index);
     setSelectedMandis(updated);
   }
 
-  /* ----------------------------------
-     Prevent Duplicate Mandis
-  ----------------------------------- */
   function getFilteredOptions(currentIndex) {
     const selectedValues = selectedMandis
       .filter((m, i) => i !== currentIndex && m)
@@ -116,6 +114,7 @@ export default function ComparisonPage() {
 
     try {
       const allResults = {};
+      const allDates = new Set();
 
       for (const mandi of validMandis) {
         const res = await fetchTradeData({
@@ -128,6 +127,7 @@ export default function ComparisonPage() {
 
         mandiData.forEach((item) => {
           const date = item.created_at;
+          allDates.add(date);
 
           if (!allResults[date]) {
             allResults[date] = { date };
@@ -136,6 +136,19 @@ export default function ComparisonPage() {
           allResults[date][mandi] = Number(item[priceType]);
         });
       }
+
+      // Ensure every date has all mandi keys (null if missing)
+      allDates.forEach((date) => {
+        if (!allResults[date]) {
+          allResults[date] = { date };
+        }
+
+        validMandis.forEach((mandi) => {
+          if (!(mandi in allResults[date])) {
+            allResults[date][mandi] = null;
+          }
+        });
+      });
 
       const mergedArray = Object.values(allResults).sort(
         (a, b) => new Date(a.date) - new Date(b.date)
@@ -167,8 +180,6 @@ export default function ComparisonPage() {
 
       {/* Filters */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
-
-        {/* Mandis */}
         <div className="lg:col-span-2">
           <label className="text-sm font-medium">Select Mandis</label>
 
@@ -205,7 +216,6 @@ export default function ComparisonPage() {
           </button>
         </div>
 
-        {/* Price Type */}
         <div>
           <label className="text-sm font-medium">Price Type</label>
           <select
@@ -219,7 +229,6 @@ export default function ComparisonPage() {
           </select>
         </div>
 
-        {/* Dates */}
         <div>
           <label className="text-sm font-medium">Start Date</label>
           <input
@@ -252,15 +261,24 @@ export default function ComparisonPage() {
         </div>
       </div>
 
-      {/* Chart */}
+      {/* Chart with Zoom */}
       {mergedData.length > 0 && (
         <div className="bg-white p-4 rounded shadow mb-6">
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={250}>
             <LineChart data={mergedData}>
-              <XAxis dataKey="date" />
-              <YAxis />
+              <XAxis
+                dataKey="date"
+                tickFormatter={formatMonthYear}
+              />
+              <YAxis width={50} />
               <Tooltip />
               <Legend />
+              <Brush
+                dataKey="date"
+                height={30}
+                stroke="#8884d8"
+                tickFormatter={formatMonthYear}
+              />
               {selectedMandis
                 .filter((m) => m)
                 .map((mandi, index) => (
@@ -269,7 +287,9 @@ export default function ComparisonPage() {
                     type="monotone"
                     dataKey={mandi.value}
                     stroke={COLORS[index % COLORS.length]}
-                    strokeWidth={3}
+                    strokeWidth={2}
+                    connectNulls
+                    dot={false}
                   />
                 ))}
             </LineChart>
@@ -299,18 +319,14 @@ export default function ComparisonPage() {
 
             <tbody>
               {paginatedData.map((row, idx) => (
-                <tr
-                  key={idx}
-                  className="border-t hover:bg-gray-50 transition"
-                >
-                  <td className="px-4 py-2 text-left whitespace-nowrap">
+                <tr key={idx} className="border-t hover:bg-gray-50">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     {row.date}
                   </td>
-
                   {selectedMandis.filter((m) => m).map((m) => (
                     <td
                       key={m.value}
-                      className="px-4 py-2 text-right whitespace-nowrap tabular-nums"
+                      className="px-4 py-2 text-right whitespace-nowrap"
                     >
                       {row[m.value] ?? "-"}
                     </td>
