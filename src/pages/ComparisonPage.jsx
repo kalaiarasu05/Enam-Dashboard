@@ -79,12 +79,13 @@ export default function ComparisonPage() {
 
       setApmcs(formatted);
 
+      // ✅ ONE MONTH AGO (30 days)
       const todayDate = new Date();
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(todayDate.getDate() - 7);
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setDate(todayDate.getDate() - 30);
 
       setToDate(formatDate(todayDate));
-      setFromDate(formatDate(sevenDaysAgo));
+      setFromDate(formatDate(oneMonthAgo));
     }
 
     init();
@@ -196,15 +197,15 @@ export default function ComparisonPage() {
           Mandi Comparison
         </h1>
 
-        {/* Controls - PricePage Style */}
+        {/* Controls */}
         <div className="bg-white shadow-xl rounded-2xl p-4 sm:p-6 mb-6">
           <div className="space-y-4 lg:grid lg:grid-cols-5 lg:gap-4 lg:space-y-0">
             {/* Mandi Selection */}
             <div className="lg:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-3">Mandi Name</label>
               {selectedMandis.map((mandi, index) => (
-                <div key={index} className="flex gap-3 mb-3 items-end">
-                  <div className="flex-1">
+                <div key={index} className="flex gap-2 mb-3 items-end">
+                  <div className="flex-1 w-full">
                     <Select
                       options={getFilteredOptions(index)}
                       value={mandi}
@@ -218,7 +219,7 @@ export default function ComparisonPage() {
                   {selectedMandis.length > 1 && (
                     <button
                       onClick={() => removeMandi(index)}
-                      className="w-10 h-11 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center shadow-lg transition-all"
+                      className="w-10 h-11 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold flex items-center justify-center shadow-lg transition-all flex-shrink-0"
                     >
                       ×
                     </button>
@@ -290,7 +291,7 @@ export default function ComparisonPage() {
           </div>
         )}
 
-        {/* Chart - Mobile Optimized */}
+        {/* Chart */}
         {mergedData.length > 0 && (
           <div className="bg-white shadow-2xl rounded-2xl overflow-hidden mb-6">
             <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-4 sm:px-6 py-3 sm:py-4 text-white shadow-lg">
@@ -333,25 +334,25 @@ export default function ComparisonPage() {
           </div>
         )}
 
-        {/* Table */}
+        {/* Comparison Table */}
         {paginatedData.length > 0 && (
           <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
             <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-4 sm:px-6 py-3 sm:py-4 text-white shadow-lg">
               <h2 className="text-base sm:text-xl font-bold">Comparison Table</h2>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[500px]">
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-emerald-400 scrollbar-track-emerald-100">
+              <table className="w-full table-auto">
                 <thead className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white border-b-4 border-emerald-300 shadow-lg">
                   <tr>
-                    <th className="p-3 sm:p-4 font-bold text-white text-sm sm:text-base text-left sticky left-0 bg-gradient-to-r from-emerald-600 to-emerald-500 z-30 border-r-2 border-emerald-400 shadow-md">
+                    <th className="p-2 sm:p-4 font-bold text-white text-xs sm:text-base text-left sticky left-0 bg-gradient-to-r from-emerald-600 to-emerald-500 z-30 border-r-2 border-emerald-400 shadow-md">
                       Date
                     </th>
                     {selectedMandis.filter((m) => m).map((m) => (
                       <th
                         key={m.value}
-                        className="p-3 sm:p-4 font-bold text-white text-sm sm:text-base text-right cursor-pointer hover:bg-teal-400 hover:shadow-md transition-all duration-200 border-r border-emerald-400"
+                        className="p-2 sm:p-4 font-bold text-white text-xs sm:text-base text-left cursor-pointer hover:bg-teal-400 hover:shadow-md transition-all duration-200"
                       >
-                        {m.label}
+                        {m.label.length > 15 ? m.label.slice(0, 15) + '...' : m.label}
                       </th>
                     ))}
                   </tr>
@@ -359,13 +360,13 @@ export default function ComparisonPage() {
                 <tbody className="divide-y divide-gray-100">
                   {paginatedData.map((row, idx) => (
                     <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-3 sm:p-4 font-semibold text-gray-900 text-sm sm:text-base bg-white sticky left-0 z-10 whitespace-nowrap">
+                      <td className="p-2 sm:p-4 font-semibold text-gray-900 text-xs sm:text-base bg-white sticky left-0 z-10 whitespace-nowrap">
                         {formatMonthYear(row.date)}
                       </td>
                       {selectedMandis.filter((m) => m).map((m) => (
                         <td
                           key={m.value}
-                          className="p-3 sm:p-4 text-right font-mono text-emerald-600 font-semibold text-sm sm:text-base whitespace-nowrap"
+                          className="p-2 sm:p-4 text-left font-mono text-emerald-600 font-semibold text-xs sm:text-base whitespace-nowrap"
                         >
                           {row[m.value] ?? "-"}
                         </td>
@@ -401,7 +402,7 @@ export default function ComparisonPage() {
 
                 <div className="flex items-center gap-2">
                   <button 
-                    onClick={() => setCurrentPage((p) => p - 1)}
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                     disabled={currentPage === 1}
                     className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
@@ -411,7 +412,7 @@ export default function ComparisonPage() {
                     {currentPage} / {totalPages}
                   </span>
                   <button 
-                    onClick={() => setCurrentPage((p) => p + 1)}
+                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                     disabled={currentPage === totalPages}
                     className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
