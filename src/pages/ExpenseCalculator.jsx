@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Select from "react-select";
 
 const mandiData = [
   { name: 'Vazhappadi', distance: 26 },
@@ -16,8 +17,46 @@ const mandiData = [
   { name: 'Annur', distance: 198 }
 ];
 
+// Same custom styles as PricePage/ComparisonPage
+const customSelectStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    border: "2px solid #e5e7eb",
+    borderRadius: "12px",
+    padding: "4px",
+    minHeight: "44px",
+    boxShadow: state.isFocused ? "0 0 0 3px rgba(16, 163, 74, 0.1)" : "0 1px 3px 0 rgba(0, 0,0,0.1)",
+    "&:hover": { borderColor: "#10b981" },
+    backgroundColor: "white"
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    padding: "12px",
+    fontSize: "14px",
+    backgroundColor: state.isSelected ? "#10b981" : state.isFocused ? "#f0fdf4" : "white",
+    color: state.isSelected ? "white" : "#374151",
+    "&:hover": { backgroundColor: "#10b981", color: "white" }
+  }),
+  menu: (provided) => ({
+    ...provided,
+    borderRadius: "12px",
+    border: "2px solid #e5e7eb",
+    boxShadow: "0 20px 25px -5px rgba(0, 0,0,0.1)",
+    marginTop: "4px"
+  }),
+  singleValue: (provided) => ({ ...provided, fontSize: "14px", color: "#111827" }),
+  placeholder: (provided) => ({ ...provided, color: "#9ca3af", fontSize: "14px" }),
+  dropdownIndicator: (provided) => ({ ...provided, color: "#6b7280", "&:hover": { color: "#10b981" } })
+};
+
 const ExpenseCalculator = () => {
-  const [selectedMandi, setSelectedMandi] = useState('');
+  // Convert to React Select format
+  const mandiOptions = mandiData.map(mandi => ({
+    value: mandi.name,
+    label: mandi.name
+  }));
+
+  const [selectedMandi, setSelectedMandi] = useState(null);
   const [fuelPrice, setFuelPrice] = useState('102');
   const [mileage, setMileage] = useState('');
   const [isRoundTrip, setIsRoundTrip] = useState(true);
@@ -26,7 +65,7 @@ const ExpenseCalculator = () => {
   const calculateExpense = () => {
     if (!selectedMandi || !mileage || !fuelPrice) return 0;
     
-    const mandi = mandiData.find(m => m.name === selectedMandi);
+    const mandi = mandiData.find(m => m.name === selectedMandi.value);
     if (!mandi) return 0;
     
     const totalDistance = isRoundTrip ? mandi.distance * 2 : mandi.distance;
@@ -43,14 +82,14 @@ const ExpenseCalculator = () => {
   };
 
   const handleReset = () => {
-    setSelectedMandi('');
+    setSelectedMandi(null);
     setMileage('');
     setFuelPrice('102');
     setIsRoundTrip(true);
     setShowResult(false);
   };
 
-  const mandiDistance = mandiData.find(m => m.name === selectedMandi)?.distance || 0;
+  const mandiDistance = mandiData.find(m => m.name === selectedMandi?.value)?.distance || 0;
   const totalDistance = isRoundTrip ? mandiDistance * 2 : mandiDistance;
   const litersNeeded = mileage ? (totalDistance / parseFloat(mileage)).toFixed(1) : 0;
 
@@ -66,7 +105,7 @@ const ExpenseCalculator = () => {
           <div className="bg-white border-4 border-emerald-400 shadow-2xl rounded-2xl p-4 sm:p-6 mb-6">
             <div className="flex flex-col gap-4 mb-4">
               <div className="text-center sm:text-left">
-                <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-2">{selectedMandi}</h2>
+                <h2 className="text-lg sm:text-2xl font-bold text-gray-800 mb-2">{selectedMandi.label}</h2>
                 <div className="text-3xl sm:text-4xl font-black text-emerald-600 mb-2">
                   ₹{calculateExpense()}
                 </div>
@@ -77,12 +116,12 @@ const ExpenseCalculator = () => {
               <div className="grid grid-cols-2 gap-3 text-sm sm:text-base bg-gray-50 p-3 sm:p-4 rounded-xl">
                 <div>Distance: <span className="font-bold text-gray-900">{mandiDistance} km</span></div>
                 <div>Total: <span className="font-bold text-gray-900">{totalDistance} km</span></div>
-                <div>Liters: <span className="font-bold text-blue-600">{litersNeeded} L</span></div>
+                <div>Liters: <span className="font-bold text-emerald-600">{litersNeeded} L</span></div>
               </div>
             </div>
             <button
               onClick={handleReset}
-              className="w-full bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded-xl font-semibold text-center text-sm sm:text-base"
+              className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 px-6 rounded-xl font-bold shadow-xl border-2 border-red-500 transition-all duration-200"
             >
               Reset
             </button>
@@ -92,25 +131,21 @@ const ExpenseCalculator = () => {
         {/* Controls + Apply Button */}
         <div className="bg-white shadow-xl rounded-2xl p-4 sm:p-6 mb-6">
           <div className="space-y-4">
-            {/* Mandi Dropdown */}
+            {/* React Select Dropdown - SAME AS OTHER PAGES */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Mandi Name</label>
-              <select
+              <Select
+                options={mandiOptions}
                 value={selectedMandi}
-                onChange={(e) => setSelectedMandi(e.target.value)}
-                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base bg-white shadow-sm"
-              >
-                <option value="">Select Mandi</option>
-                {mandiData.map((mandi) => (
-                  <option key={mandi.name} value={mandi.name}>
-                    {mandi.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedMandi}
+                placeholder="Search & Select Mandi..."
+                isSearchable
+                styles={customSelectStyles}
+                maxMenuHeight={200}
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Fuel Price */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Fuel Price (₹/L)</label>
                 <input
@@ -121,8 +156,6 @@ const ExpenseCalculator = () => {
                   className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base bg-white shadow-sm"
                 />
               </div>
-
-              {/* Mileage */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Mileage (km/L)</label>
                 <input
@@ -135,7 +168,6 @@ const ExpenseCalculator = () => {
               </div>
             </div>
 
-            {/* Round Trip */}
             <div className="flex items-center p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl">
               <input
                 type="checkbox"
@@ -149,7 +181,6 @@ const ExpenseCalculator = () => {
               </label>
             </div>
 
-            {/* Apply Button */}
             <div className="pt-2">
               <button
                 onClick={handleApply}
@@ -162,26 +193,28 @@ const ExpenseCalculator = () => {
           </div>
         </div>
 
-        {/* Mandi Table */}
+        {/* Mandi List Table - NOW EMERALD THEME */}
         <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 sm:px-6 py-3 sm:py-4 text-white">
+          <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-4 sm:px-6 py-3 sm:py-4 text-white shadow-lg">
             <h2 className="text-base sm:text-xl font-bold">Mandi List</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[280px] sm:min-w-[320px]">
-              <thead>
-                <tr className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-b-2 border-blue-400">
-                  <th className="text-left p-3 sm:p-4 font-bold text-white text-sm sm:text-base">Mandi Name</th>
-                  <th className="text-left p-3 sm:p-4 font-bold text-white text-sm sm:text-base w-24">Distance</th>
+              <thead className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white border-b-4 border-emerald-300 shadow-lg">
+                <tr>
+                  <th className="text-left p-3 sm:p-4 font-bold text-white text-sm sm:text-base sticky left-0 bg-gradient-to-r from-emerald-600 to-emerald-500 z-20 border-r-2 border-emerald-400 shadow-md">
+                    Mandi Name
+                  </th>
+                  <th className="text-right p-3 sm:p-4 font-bold text-white text-sm sm:text-base cursor-pointer hover:bg-teal-400 hover:shadow-md transition-all duration-200">
+                    Distance
+                  </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-100">
                 {mandiData.map((mandi, index) => (
-                  <tr key={index} className="hover:bg-gray-50 border-b border-gray-100 transition-colors">
-                    <td className="p-3 sm:p-4 font-semibold text-gray-900 text-sm sm:text-base">{mandi.name}</td>
-                    <td className="p-3 sm:p-4 text-gray-700 font-bold text-emerald-600 text-center text-lg sm:text-xl font-mono">
-                      {mandi.distance}km
-                    </td>
+                  <tr key={index} className="hover:bg-gray-50 transition-colors">
+                    <td className="p-3 sm:p-4 font-semibold text-gray-900 text-sm sm:text-base bg-white sticky left-0 z-10">{mandi.name}</td>
+                    <td className="p-3 sm:p-4 text-right font-mono text-emerald-600 font-bold text-lg sm:text-xl">{mandi.distance}km</td>
                   </tr>
                 ))}
               </tbody>

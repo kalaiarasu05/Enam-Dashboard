@@ -12,24 +12,6 @@ const BASE_URL = "https://enam.gov.in/web/Ajax_ctrl";
 
 /*
 --------------------------------------------------
-ALLOWED MANDIS (Tamil Nadu Only)
---------------------------------------------------
-*/
-const ALLOWED_MANDIS = [
-  "ELUMATHUR", "VELLAKOIL", "ANAIMALAI", "KODUMUDI", "UDUMALPET",
-  "PARAMATHI VELUR", "PONGALUR", "SINGAMPUNERI", "OMALUR", "ANNUR",
-  "MECHERI", "SATHYAMANGALAM", "T VADIPATTI", "AVALPOONDURAI",
-  "GOPAL PATTI", "NEGAMAM", "POCHAMPALLI", "SALEM", "VAZHAPPADI",
-  "GOBICHETTIPALAYAM", "THENI", "NAMAGIRIPETTAI", "MADATHUKULAM",
-  "KONGANAPURAM", "ANTHIYUR", "MUTHUR", "KANGEYAM", "UTHANGARAI",
-  "BOOTHAPADI", "THALAVADI", "MELUR", "PALANI", "ARANTHANGI",
-  "EDAPPADI", "CHEYYAR", "RAJAPALAYAM", "VANDAVASI", "ATTHUR",
-  "CUMBUM", "KAVINDAPADI", "KINATHUKADAVU", "RAMANATHAPURAM",
-  "THIRUPATHUR", "VANIYAMBADI"
-];
-
-/*
---------------------------------------------------
 COMMON HEADERS (Important for eNAM)
 --------------------------------------------------
 */
@@ -51,7 +33,7 @@ app.get("/", (req, res) => {
 
 /*
 --------------------------------------------------
-APMC LIST ROUTE (Filtered + Sorted)
+APMC LIST ROUTE (ALL MANDIS - NO FILTERING)
 --------------------------------------------------
 */
 app.post("/api/apmcs", async (req, res) => {
@@ -73,13 +55,8 @@ app.post("/api/apmcs", async (req, res) => {
       });
     }
 
-    // Filter only allowed mandis
-    const filteredApmcs = allApmcs.filter(apmc =>
-      ALLOWED_MANDIS.includes(apmc.apmc_name?.toUpperCase())
-    );
-
-    // Sort alphabetically
-    const sortedApmcs = filteredApmcs.sort((a, b) =>
+    // ✅ NO FILTERING - Return ALL mandis sorted alphabetically
+    const sortedApmcs = allApmcs.sort((a, b) =>
       a.apmc_name.localeCompare(b.apmc_name)
     );
 
@@ -96,20 +73,12 @@ app.post("/api/apmcs", async (req, res) => {
 
 /*
 --------------------------------------------------
-TRADE DATA ROUTE (Restricted Mandis)
+TRADE DATA ROUTE (ALL MANDIS ALLOWED)
 --------------------------------------------------
 */
 app.post("/api/trade-data", async (req, res) => {
   try {
     const { apmcName, fromDate, toDate } = req.body;
-
-    // Validate mandi if selected
-    if (apmcName && !ALLOWED_MANDIS.includes(apmcName.toUpperCase())) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Mandi Selected"
-      });
-    }
 
     const response = await axios.post(
       `${BASE_URL}/trade_data_list`,
