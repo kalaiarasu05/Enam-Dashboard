@@ -361,7 +361,7 @@ export default function ComparisonPage() {
                   {paginatedData.map((row, idx) => (
                     <tr key={idx} className="hover:bg-gray-50 transition-colors">
                       <td className="p-2 sm:p-4 font-semibold text-gray-900 text-xs sm:text-base bg-white sticky left-0 z-10 whitespace-nowrap">
-                        {formatMonthYear(row.date)}
+                        {row.date}
                       </td>
                       {selectedMandis.filter((m) => m).map((m) => (
                         <td

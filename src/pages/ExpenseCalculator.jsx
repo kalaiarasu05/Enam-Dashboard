@@ -97,7 +97,7 @@ const ExpenseCalculator = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 py-4 px-3 sm:px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center leading-tight">
-          Copra Expense Calculator
+          Expense Calculator
         </h1>
         
         {/* RESULT - Only visible after Apply button */}
