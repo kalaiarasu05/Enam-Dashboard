@@ -333,96 +333,107 @@ export default function ComparisonPage() {
             </div>
           </div>
         )}
+{/* Comparison Table */}
+{paginatedData.length > 0 && (
+  <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
 
-        {/* Comparison Table */}
-        {paginatedData.length > 0 && (
-          <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-4 sm:px-6 py-3 sm:py-4 text-white shadow-lg">
-              <h2 className="text-base sm:text-xl font-bold">Comparison Table</h2>
-            </div>
-            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-emerald-400 scrollbar-track-emerald-100">
-              <table className="w-full table-auto">
-                <thead className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white border-b-4 border-emerald-300 shadow-lg">
-                  <tr>
-                    <th className="p-2 sm:p-4 font-bold text-white text-xs sm:text-base text-left sticky left-0 bg-gradient-to-r from-emerald-600 to-emerald-500 z-30 border-r-2 border-emerald-400 shadow-md">
-                      Date
-                    </th>
-                    {selectedMandis.filter((m) => m).map((m) => (
-                      <th
-                        key={m.value}
-                        className="p-2 sm:p-4 font-bold text-white text-xs sm:text-base text-left cursor-pointer hover:bg-teal-400 hover:shadow-md transition-all duration-200"
-                      >
-                        {m.label.length > 15 ? m.label.slice(0, 15) + '...' : m.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {paginatedData.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-2 sm:p-4 font-semibold text-gray-900 text-xs sm:text-base bg-white sticky left-0 z-10 whitespace-nowrap">
-                        {row.date}
-                      </td>
-                      {selectedMandis.filter((m) => m).map((m) => (
-                        <td
-                          key={m.value}
-                          className="p-2 sm:p-4 text-left font-mono text-emerald-600 font-semibold text-xs sm:text-base whitespace-nowrap"
-                        >
-                          {row[m.value] ?? "-"}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+    {/* Table Header */}
+    <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-4 sm:px-6 py-3 sm:py-4 text-white shadow-lg">
+      <h2 className="text-base sm:text-xl font-bold">
+        Comparison Table
+      </h2>
+    </div>
+    {/* Scroll Wrapper */}
+    <div className="w-full overflow-x-auto">
+      <table className="w-full table-fixed border-collapse">
+        <thead className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white border-b border-emerald-300">
+          <tr>
+            {/* Date Column */}
+            <th style={{ width: `${100 / (selectedMandis.filter(m => m).length + 1)}%` }}
+              className="px-2 sm:px-4 py-3 sm:py-4 font-bold text-sm sm:text-base sticky left-0 bg-gradient-to-r from-emerald-600 to-emerald-500 z-30 whitespace-nowrap"
+            >
+              Date
+            </th>
+            {selectedMandis.filter(m => m).map((m) => (
+              <th
+                key={m.value}
+                style={{ width: `${100 / (selectedMandis.filter(m => m).length + 1)}%` }}
+                className="px-2 sm:px-4 py-3 sm:py-4 font-bold text-sm sm:text-base text-left whitespace-nowrap"
+              >
+                {m.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {paginatedData.map((row, idx) => (
+            <tr key={idx} className="hover:bg-gray-50 transition-colors">
+              <td style={{ width: `${100 / (selectedMandis.filter(m => m).length + 1)}%` }}
+                className="px-2 sm:px-4 py-3 sm:py-4 font-semibold text-gray-900 text-sm sm:text-base bg-white sticky left-0 z-20 whitespace-nowrap"
+              >
+                {row.date}
+              </td>
+              {selectedMandis.filter(m => m).map((m) => (
+                <td
+                  key={m.value}
+                  style={{ width: `${100 / (selectedMandis.filter(m => m).length + 1)}%` }}
+                  className="px-2 sm:px-4 py-3 sm:py-4 text-left font-mono text-emerald-600 text-sm sm:text-base whitespace-nowrap"
+                >
+                  {row[m.value] ?? "-"}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
 
-            {/* Pagination */}
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-4 border-t border-emerald-200">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm sm:text-base">
-                <div className="text-gray-600 font-semibold">
-                  Showing {startIndex + 1}–{Math.min(endIndex, mergedData.length)} of {mergedData.length} records
-                </div>
+    {/* Pagination */}
+    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-4 border-t border-emerald-200">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm sm:text-base">
+        <div className="text-gray-600 font-semibold">
+          Showing {startIndex + 1}–{Math.min(endIndex, mergedData.length)} of {mergedData.length} records
+        </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-700">Rows:</span>
-                  <select
-                    value={rowsPerPage}
-                    onChange={(e) => {
-                      setRowsPerPage(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="p-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 bg-white shadow-sm"
-                  >
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                  </select>
-                </div>
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-gray-700">Rows:</span>
+          <select
+            value={rowsPerPage}
+            onChange={(e) => {
+              setRowsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="p-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 bg-white shadow-sm"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
 
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    Prev
-                  </button>
-                  <span className="font-bold text-gray-900 px-4 py-2 bg-white rounded-xl shadow-sm">
-                    {currentPage} / {totalPages}
-                  </span>
-                  <button 
-                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Prev
+          </button>
+          <span className="font-bold text-gray-900 px-4 py-2 bg-white rounded-xl shadow-sm">
+            {currentPage} / {totalPages}
+          </span>
+          <button 
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );

@@ -193,34 +193,41 @@ const ExpenseCalculator = () => {
           </div>
         </div>
 
-        {/* Mandi List Table - NOW EMERALD THEME */}
-        <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-4 sm:px-6 py-3 sm:py-4 text-white shadow-lg">
-            <h2 className="text-base sm:text-xl font-bold">Mandi List</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[280px] sm:min-w-[320px]">
-              <thead className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white border-b-4 border-emerald-300 shadow-lg">
-                <tr>
-                  <th className="text-left p-3 sm:p-4 font-bold text-white text-sm sm:text-base sticky left-0 bg-gradient-to-r from-emerald-600 to-emerald-500 z-20 border-r-2 border-emerald-400 shadow-md">
-                    Mandi Name
-                  </th>
-                  <th className="text-right p-3 sm:p-4 font-bold text-white text-sm sm:text-base cursor-pointer hover:bg-teal-400 hover:shadow-md transition-all duration-200">
-                    Distance
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {mandiData.map((mandi, index) => (
-                  <tr key={index} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-3 sm:p-4 font-semibold text-gray-900 text-sm sm:text-base bg-white sticky left-0 z-10">{mandi.name}</td>
-                    <td className="p-3 sm:p-4 text-right font-mono text-emerald-600 font-bold text-lg sm:text-xl">{mandi.distance}km</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+{/* Mandi List Table - EMERALD THEME WITH STICKY COLUMN */}
+<div className="bg-white shadow-2xl rounded-2xl overflow-hidden mt-6">
+  <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-4 sm:px-6 py-3 sm:py-4 text-white shadow-lg">
+    <h2 className="text-base sm:text-xl font-bold">Mandi List</h2>
+  </div>
+
+  {/* Scrollable wrapper */}
+  <div className="overflow-x-auto">
+    <table className="min-w-max w-full table-fixed border-collapse">
+      <thead className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white border-b-4 border-emerald-300 shadow-lg">
+        <tr>
+          <th className="px-2 sm:px-4 py-3 sm:py-4 font-bold text-sm sm:text-base sticky left-0 bg-gradient-to-r from-emerald-600 to-emerald-500 z-30 whitespace-nowrap border-r-2 border-emerald-400">
+            Mandi Name
+          </th>
+          <th className="px-2 sm:px-4 py-3 sm:py-4 font-bold text-sm sm:text-base text-left whitespace-nowrap">
+            Distance (km)
+          </th>
+        </tr>
+      </thead>
+
+      <tbody className="divide-y divide-gray-100">
+        {mandiData.map((mandi, index) => (
+          <tr key={index} className="hover:bg-gray-50 transition-colors">
+            <td className="px-2 sm:px-4 py-3 sm:py-4 font-semibold text-gray-900 text-sm sm:text-base bg-white sticky left-0 z-20 whitespace-nowrap uppercase">
+              {mandi.name}
+            </td>
+            <td className="px-2 sm:px-4 py-3 sm:py-4 font-mono text-emerald-600 text-sm sm:text-base whitespace-nowrap font-bold">
+              {mandi.distance} km
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
       </div>
     </div>
   );
